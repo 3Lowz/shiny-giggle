@@ -1,4 +1,4 @@
-import { WeatherInfo, ResultType } from "./Weather";
+import { WeatherData, ResultType } from "./Weather";
 import WeatherService from "./Weather.service";
 
 class WeatherRepository {
@@ -9,7 +9,7 @@ class WeatherRepository {
         this.service = service
     }
 
-    async getByCity(city: string): Promise<ResultType<Error, WeatherInfo>> {
+    async getByCity(city: string): Promise<ResultType<Error, WeatherData>> {
         console.log(`Fetching weather for city: `, city)
         return await this.service.getByCity(city)
 

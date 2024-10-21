@@ -8,7 +8,7 @@ import { WeatherContext } from './context/Weather.context'
 
 import WeatherService from './services/Weather.service'
 import WeatherRepository from './services/Weather.repository'
-import { WeatherInfo, ResultType } from './services/Weather'
+import { ResultType, WeatherData } from './services/Weather'
 
 import './App.css'
 
@@ -20,21 +20,9 @@ function App() {
   const [err, setError] = useState('')
   const repository = new WeatherRepository(AppService)
 
-  // useEffect(() => {
-  //   repository.getByCity('test').then((data: ResultType<Error, WeatherInfo>) => {
-  //     setOutput(data)
-  //   }).catch((err: Error) => {
-  //     // @ts-ignore
-  //     setError(err[0].message)
-  //   })
-  // }, [])
-
   const handleClick = (e: any) => {
     const city = AppService.getCity().name
-    const filters = AppService.getFilters()
-    console.log(city)
-    console.log(filters)
-    repository.getByCity(city).then(([err, data]: ResultType<Error, WeatherInfo>) => {
+    repository.getByCity(city).then(([err, data]: ResultType<Error, WeatherData>) => {
       if (!!err) {
         setError(err.message)
       }
@@ -58,12 +46,9 @@ function App() {
           </div>
         </header>
         <div>
-          {JSON.stringify(data)}
-          <br />
           {err}
-        </div>
-        <div>
-          <WeatherTable />
+          <br />
+          <WeatherTable data={data} />
         </div>
       </WeatherContext.Provider>
     </div>

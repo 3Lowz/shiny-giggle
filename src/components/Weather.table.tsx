@@ -1,22 +1,24 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { WeatherContext } from '../context/Weather.context'
-import WeatherRepository from '../services/Weather.repository'
-import { ResultType, WeatherInfo } from '../services/Weather'
+import React from 'react'
+import { WeatherData } from '../services/Weather'
+import WeatherList from './Weather.list'
 
-type City = {
-    city: string
+export type DataTable = {
+    data: WeatherData
 }
 
-const WeatherTable = (): React.ReactElement => {
+const WeatherTable = (props: DataTable): React.ReactElement => {
 
     // const service = useContext(WeatherContext)
-
-    const city = 'fdasfasd'
-
-    const [data, setData] = useState({} as WeatherInfo)
+    let lists = []
+    for (let key in props.data) {
+        // @ts-ignore
+        lists.push(<WeatherList name={key} key={key} unitMeasure={props.data[key].unitMeasure} values={props.data[key].values} />)
+    }
 
     return (<>
-        {city}
+        {lists.map((list) => {
+            return list
+        })}
     </>)
 }
 

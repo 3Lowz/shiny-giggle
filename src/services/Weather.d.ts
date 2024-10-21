@@ -1,13 +1,12 @@
 import { Filter } from '../components/Weather.filters'
 
 export type WeatherAtom = [string, number]
+export type WeatherValues = 'temperature_2m' | 'relative_humidity_2m' | 'precipitation' | 'wind_speed_10m'
 
-// React-Redux state
-export type WeatherApp = {
-    filters: Property,
-    city: string,
-    info: {
-        [key: string]: WeatherAtom[]
+export type WeatherData = {
+    [key: WeatherValues]: {
+        unitMeasure: UnitMeasure,
+        values: WeatherAtom[]
     }
 }
 
@@ -15,6 +14,7 @@ export type TemperatureMetrics = '°C' | '°F'
 export type HumidityMetrics = '%'
 export type PrecipitationMetrics = 'mm'
 export type WindMetrics = 'km/h' | 'm/s'
+export type UnitMeasure = TemperatureMetrics | HumidityMetrics | PrecipitationMetrics | WindMetrics
 
 export type WeatherInfo = {
     latitude: number,
@@ -30,13 +30,11 @@ export type WeatherInfo = {
         relative_humidity_2m: HumidityMetrics,
         precipitation: PrecipitationMetrics,
         wind_speed_10m: WindMetrics
+        [key: WeatherValues]: UnitMeasure
     },
     hourly: {
         time: string[],
-        temperature_2m?: number[],
-        relative_humidity_2m?: number[],
-        precipitation: number[],
-        wind_speed_10m: number[]
+        [key: WeatherValues]: number[],
     }
 }
 

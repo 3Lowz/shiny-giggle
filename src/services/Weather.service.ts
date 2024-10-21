@@ -1,6 +1,6 @@
 import { City } from "../components/City.select"
 import { Filter } from "../components/Weather.filters"
-import { WeatherInfo, ResultType, Coordinates } from "./Weather"
+import { WeatherInfo, WeatherData, WeatherValues, ResultType, Coordinates, UnitMeasure } from "./Weather"
 
 class WeatherService {
 
@@ -20,7 +20,7 @@ class WeatherService {
     ]
     private city: City = { name: 'Zurich', location: [47.3667, 8.55] }
 
-    async getByCity(cityName: string): Promise<ResultType<Error, WeatherInfo>> {
+    async getByCity(cityName: string): Promise<ResultType<Error, WeatherData>> {
 
         const selectedCity = this.cities.filter((city) => cityName === city.name)[0]
         let selectedFilter = []
@@ -41,7 +41,7 @@ class WeatherService {
                         reject([new Error(data.reason), {}])
                     }
                     else {
-                        resolve([undefined, data])
+                        resolve([undefined, this._transformData(data)])
                     }
                 }).catch((err: Error) => {
                     console.log(err)
@@ -67,6 +67,39 @@ class WeatherService {
         }
         const searchParams = new URLSearchParams(paramsObj);
         return `${this.BASEURL}?${searchParams.toString()}`
+    }
+
+    /**
+     * 
+     * @param data 
+     * @returns 
+     */
+    private _transformData(data: WeatherInfo): WeatherData {
+        const measures = Object.keys(data.hourly).filter((key) => key !== 'time') as WeatherValues[]
+        const measuresUnits = data.hourly_units
+        let res = {} as WeatherData
+        // Initializing the WeatherData object keys and unitMeasure
+        measures.map((measure: string) => {
+            // @ts-ignore   
+            res[measure] = {
+                // @ts-ignore   
+                unitMeasure: measuresUnits[measure],
+                values: []
+            }
+        })
+        data.hourly.time.map((datetime, i) => {
+            measures.forEach((measure) => {
+                // @ts-ignore
+                if (!!data.hourly[measure][i]) {
+                    // @ts-ignore   
+                    res[measure].values.push([datetime, data.hourly[measure][i]])
+                } else {
+                    // @ts-ignore
+                    res[measure].values.push([datetime, -1])  // Not found data handling
+                }
+            })
+        })
+        return res as WeatherData
     }
 
     /**
