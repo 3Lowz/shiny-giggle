@@ -40,6 +40,8 @@ export type WeatherInfo = {
     }
 }
 
+export type Coordinates = [number, number]
+
 export type ResultType<E = Error, T> = [Error?, T?]
 
 interface Repository<T> {
@@ -49,7 +51,7 @@ interface Repository<T> {
 
 interface WeatherRepository extends Repository<WeatherInfo> {
     // List<Article> read();
-    getByCity(city: string): WeatherInfo
+    async getByCity(city: string): WeatherInfo
 }
 
 interface WeatherService {

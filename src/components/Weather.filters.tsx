@@ -1,17 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
+import { WeatherContext } from '../context/Weather.context'
 import WeatherCheckbox from './Weather.checkbox'
 
 export type Filter = { [key: string]: boolean }
 
 const WheaterFilters = (): React.ReactElement => {
 
+    const service = useContext(WeatherContext)
+
     // Statics due to requirements
-    const fixedFilters: Filter = {
-        'temperature_2m': false,
-        'relative_humidity_2m': false,
-        'precipitation': false,
-        'wind_speed_10m': false,
-    }
+    const fixedFilters: Filter = service.getFilters()
     const [filters, setProperties] = useState(fixedFilters)
 
     const handleChange = (fieldName: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,6 +17,10 @@ const WheaterFilters = (): React.ReactElement => {
             ...filters,
             [fieldName]: !!e.target.checked,
         });
+        service.setFilter({
+            ...filters,
+            [fieldName]: !!e.target.checked,
+        })
     };
 
     let filterComponents = []

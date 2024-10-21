@@ -3,9 +3,15 @@ import WeatherService from "./Weather.service";
 
 class WeatherRepository {
 
-    static async getByCity(city: string): Promise<ResultType<Error, WeatherInfo>> {
+    private service: WeatherService
 
-        return await WeatherService.getByCoords(1.1, 2.2)
+    constructor(service: WeatherService) {
+        this.service = service
+    }
+
+    async getByCity(city: string): Promise<ResultType<Error, WeatherInfo>> {
+        console.log(`Fetching weather for city: `, city)
+        return await this.service.getByCity(city)
 
         // if (!err || !!data) {
         //     console.error(err)
