@@ -1,18 +1,43 @@
-import { WeatherInfo, ResultType } from "./Weather"
+import { City } from "../components/City.select"
+import { Filter } from "../components/Weather.filters"
+import { WeatherInfo, WeatherData, WeatherValues, ResultType, Coordinates, UnitMeasure } from "./Weather"
+
+/**
+ * NB: @ts-ignore here are due to: https://github.com/microsoft/TypeScript/issues/15627
+ */
 
 class WeatherService {
 
-    private BASEURL: string = `https://api.open-meteo.com/v1/forecast?latitude=45.9569&longitude=12.6605&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&timezone=Europe%2FBerlin&forecast_days=3`
-
-    async getByCity(city: string): Promise<ResultType<Error, WeatherInfo>> {
-        return new Promise((resolve, reject) => {
-            reject(new Error(`my error`))
-        })
+    private BASEURL: string = `https://api.open-meteo.com/v1/forecast`
+    private filters: Filter = {
+        'temperature_2m': false,
+        'relative_humidity_2m': false,
+        'precipitation': false,
+        'wind_speed_10m': false,
     }
+    private cities: City[] = [
+        { name: 'Pordenone', location: [45.9569, 12.6605] },
+        { name: 'Milan', location: [45.5921, 9.5734] },
+        { name: 'Zurich', location: [47.3667, 8.55] },
+        { name: 'Lisboa', location: [38.7167, -9.1333] },
+        { name: 'Udin', location: [46.0693, 13.2371] },
+    ]
+    private city: City = { name: 'Zurich', location: [47.3667, 8.55] }
 
-    static getByCoords(lat: number, lng: number): Promise<ResultType<Error, WeatherInfo>> {
+    async getByCity(cityName: string): Promise<ResultType<Error, WeatherData>> {
+
+        const selectedCity = this.cities.filter((city) => cityName === city.name)[0]
+        let selectedFilter = []
+        for (let key in this.filters) {
+            if (this.filters[key]) {
+                selectedFilter.push(key)
+            }
+        }
+        if (!selectedFilter.length) {
+            selectedFilter = ['temperature_2m']
+        }
+        const url = this._buildUrl(selectedCity.location, selectedFilter)
         return new Promise((resolve, reject) => {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=45.9569&longitude=12.6605&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&timezone=Europe%2FBerlin&forecast_days=3`
             fetch(url)
                 .then(res => res.json())
                 .then((data: any) => {
@@ -20,13 +45,83 @@ class WeatherService {
                         reject([new Error(data.reason), {}])
                     }
                     else {
-                        resolve([undefined, data])
+                        resolve([undefined, this._transformData(data)])
                     }
                 }).catch((err: Error) => {
                     console.log(err)
                     reject([err, {}])
                 })
         })
+    }
+
+    getByCoords(lat: number, lng: number): Promise<ResultType<Error, WeatherInfo>> {
+        return new Promise((resolve, reject) => {
+            reject([new Error(`Unimplemented`), null])
+        })
+    }
+
+    private _buildUrl(position: Coordinates, activeFilters: string[]) {
+
+        const paramsObj = {
+            latitude: `${position[0]}`,
+            longitude: `${position[1]}`,
+            hourly: activeFilters.join(','),
+            timezone: 'Europe/Berlin',
+            forecast_days: `3`,
+        }
+        const searchParams = new URLSearchParams(paramsObj);
+        return `${this.BASEURL}?${searchParams.toString()}`
+    }
+
+    /**
+     * 
+     * @param data 
+     * @returns 
+     */
+    private _transformData(data: WeatherInfo): WeatherData {
+        const measures: WeatherValues[] = Object.keys(data.hourly).filter((key) => key !== 'time') as WeatherValues[]
+        const measuresUnits = data.hourly_units
+        let res = {} as WeatherData
+        // Initializing the WeatherData object keys and unitMeasure
+        measures.map((measure: WeatherValues) => {
+            // @ts-ignore
+            res[measure] = {
+                unitMeasure: measuresUnits[measure],
+                values: []
+            }
+        })
+        data.hourly.time.map((datetime, i) => {
+            measures.forEach((measure) => {
+                // @ts-ignore
+                if (data.hourly[measure][i] == null) {
+                    // @ts-ignore
+                    res[measure].values.push([datetime, -1])  // Not found data handling
+                } else {
+                    // @ts-ignore
+                    res[measure].values.push([datetime, data.hourly[measure][i]])
+                }
+            })
+        })
+        return res as WeatherData
+    }
+
+    /**
+     * Getters and Setters
+     */
+    getFilters() {
+        return this.filters
+    }
+    setFilter(filters: Filter) {
+        this.filters = filters
+    }
+    getCities() {
+        return this.cities
+    }
+    setCity(city: City) {
+        this.city = city
+    }
+    getCity() {
+        return this.city
     }
 
 }

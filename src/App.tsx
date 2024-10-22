@@ -1,40 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import WheaterFilters from './components/Weather.filters';
+import React, { useState } from 'react'
 
-import WeatherRepository from './services/Weather.repository';
-import { WeatherInfo, ResultType } from './services/Weather';
+import WheaterFilters from './components/Weather.filters'
+import CitySelect from './components/City.select'
+import WeatherTable from './components/Weather.table'
 
-import './App.css';
-import CitySelect from './components/City.select';
+import { WeatherContext } from './context/Weather.context'
+
+import WeatherService from './services/Weather.service'
+import WeatherRepository from './services/Weather.repository'
+import { ResultType, WeatherData } from './services/Weather'
+
+import './App.css'
+
+const AppService = new WeatherService()
 
 function App() {
 
-  const [output, setOutput] = useState({})
+  const [data, setData] = useState({})
   const [err, setError] = useState('')
-  // const [handled, setHandled] = useState(false)
+  const repository = new WeatherRepository(AppService)
 
-  useEffect(() => {
-    WeatherRepository.getByCity('test').then((data: ResultType<Error, WeatherInfo>) => {
-      setOutput(data)
+  const handleClick = (e: any) => {
+    const city = AppService.getCity().name
+    repository.getByCity(city).then(([err, data]: ResultType<Error, WeatherData>) => {
+      if (!!err) {
+        setError(err.message)
+      }
+      if (!!data) {
+        setData(data)
+      }
     }).catch((err: Error) => {
-      // @ts-ignore
-      setError(err[0].message)
+      setError(err.message)
     })
-  }, [])
+  }
+
 
   return (
     <div className="App">
-      <header className="App-header">
-        <CitySelect />
-        <WheaterFilters />
-      </header>
-      <div>
-        {JSON.stringify(output)}
-        <br />
-        {err}
-      </div>
+      <WeatherContext.Provider value={AppService}>
+        <header className="App-header">
+          <CitySelect />
+          <WheaterFilters />
+          <div>
+            <button onClick={handleClick} type="button">Fetch Data</button>
+          </div>
+        </header>
+        <div>
+          {err}
+          <br />
+          {/* @ts-ignore */}
+          <WeatherTable data={data} />
+        </div>
+      </WeatherContext.Provider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
