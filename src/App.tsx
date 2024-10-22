@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import WheaterFilters from './components/Weather.filters'
 import CitySelect from './components/City.select'
@@ -48,6 +48,7 @@ function App() {
         <div>
           {err}
           <br />
+          {/* @ts-ignore */}
           <WeatherTable data={data} />
         </div>
       </WeatherContext.Provider>

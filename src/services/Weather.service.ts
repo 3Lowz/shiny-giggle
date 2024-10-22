@@ -2,6 +2,10 @@ import { City } from "../components/City.select"
 import { Filter } from "../components/Weather.filters"
 import { WeatherInfo, WeatherData, WeatherValues, ResultType, Coordinates, UnitMeasure } from "./Weather"
 
+/**
+ * NB: @ts-ignore here are due to: https://github.com/microsoft/TypeScript/issues/15627
+ */
+
 class WeatherService {
 
     private BASEURL: string = `https://api.open-meteo.com/v1/forecast`
@@ -75,14 +79,13 @@ class WeatherService {
      * @returns 
      */
     private _transformData(data: WeatherInfo): WeatherData {
-        const measures = Object.keys(data.hourly).filter((key) => key !== 'time') as WeatherValues[]
+        const measures: WeatherValues[] = Object.keys(data.hourly).filter((key) => key !== 'time') as WeatherValues[]
         const measuresUnits = data.hourly_units
         let res = {} as WeatherData
         // Initializing the WeatherData object keys and unitMeasure
-        measures.map((measure: string) => {
-            // @ts-ignore   
+        measures.map((measure: WeatherValues) => {
+            // @ts-ignore
             res[measure] = {
-                // @ts-ignore   
                 unitMeasure: measuresUnits[measure],
                 values: []
             }
@@ -90,12 +93,12 @@ class WeatherService {
         data.hourly.time.map((datetime, i) => {
             measures.forEach((measure) => {
                 // @ts-ignore
-                if (!!data.hourly[measure][i]) {
-                    // @ts-ignore   
-                    res[measure].values.push([datetime, data.hourly[measure][i]])
-                } else {
+                if (data.hourly[measure][i] == null) {
                     // @ts-ignore
                     res[measure].values.push([datetime, -1])  // Not found data handling
+                } else {
+                    // @ts-ignore
+                    res[measure].values.push([datetime, data.hourly[measure][i]])
                 }
             })
         })
@@ -115,7 +118,6 @@ class WeatherService {
         return this.cities
     }
     setCity(city: City) {
-        console.log(`setting city:`, city.name)
         this.city = city
     }
     getCity() {

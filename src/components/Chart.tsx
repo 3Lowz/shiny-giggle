@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { ElementRef, useEffect, useRef } from 'react'
 import * as d3 from 'd3'
-import { UnitMeasure, WeatherAtom, WeatherValues } from '../services/Weather'
+import { UnitMeasure, WeatherAtom } from '../services/Weather'
 
 export type ChartData = {
     name: string,
@@ -20,25 +20,20 @@ export const ChartRef: React.FC<ChartData> = (props: ChartData): React.ReactElem
             margin = 35
 
         // Defining the x-scale
-        // @ts-ignore
         const x = d3.scaleTime(d3.extent(data, d => new Date(d[0])), [margin, width - margin])
 
         // Defining the y-scale
-        // @ts-ignore
         const y = d3.scaleLinear([
             d3.min(data, d => 0),
             d3.max(data, d => d[1] * 1.3) // Hacking max to display nice line
         ], [height - margin, margin])
 
-        // Defining the chart line, here we have the considered values (Datetime, Close)
+        // Defining the chart line
         const linePath = d3.line()
-            // @ts-ignore
             .x(d => x(new Date(d[0])))
-            // @ts-ignore
             .y(d => y(d[1]))
 
         // Creating the main chart
-        // @ts-ignore
         const chart = d3.select(ref)
             .attr("width", width)
             .attr("height", height)
@@ -70,7 +65,6 @@ export const ChartRef: React.FC<ChartData> = (props: ChartData): React.ReactElem
             .attr("fill", "none")
             .attr("stroke", "steelblue")
             .attr("stroke-width", 1.5)
-            // @ts-ignore
             .attr("d", linePath(data))
 
     }
@@ -81,7 +75,6 @@ export const ChartRef: React.FC<ChartData> = (props: ChartData): React.ReactElem
 
     return <div className="svg">
         <h3>{props.name} - {props.unitMeasure}</h3>
-        {/* @ts-ignore */}
         <svg className="container" ref={(refer) => ref = refer} width='700' height='500'></svg>
     </div>
 
